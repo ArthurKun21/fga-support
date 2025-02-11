@@ -30,6 +30,18 @@ jobs:
           if [ ! -d "craft_essence" ]; then
             mkdir craft_essence
           fi
+
+          # Define the parent directory
+          TARGET_DIR="craft_essence"
+
+          # Move only .png files from subdirectories to the parent directory.
+          find "$TARGET_DIR" -mindepth 2 -type f -iname '*.png' -exec mv {} "$TARGET_DIR" \;
+
+          # Delete empty directories within ce.
+          find "$TARGET_DIR" -mindepth 1 -type d -empty -delete
+
+          echo "All .png images have been moved to '$TARGET_DIR' and empty directories deleted."
+
           zip -r craft_essence.zip craft_essence
           sha=`sha256sum craft_essence.zip | awk '{ print $1 }'`
           echo "CE_SHA=$sha" >> $GITHUB_ENV
