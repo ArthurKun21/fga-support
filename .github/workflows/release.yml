@@ -34,13 +34,19 @@ jobs:
           # Define the parent directory
           TARGET_DIR="craft_essence"
 
-          # Move only .png files from subdirectories to the parent directory.
-          find "$TARGET_DIR" -mindepth 2 -type f -iname '*.png' -exec mv {} "$TARGET_DIR" \;
+          # Find all .png files in subdirectories and process them.
+          find "$TARGET_DIR" -mindepth 2 -type f -iname '*.png' -print0 | while IFS= read -r -d '' file; do
+            # Get the filename from the full path.
+            base=$(basename "$file")
+            # Remove all occurrences of '_000' from the filename.
+            newbase="${base//_000/}"
+            
+            # Move (and rename) the file to the TARGET_DIR.
+            mv "$file" "$TARGET_DIR/$newbase"
+          done
 
-          # Delete empty directories within ce.
+          # Delete any empty directories within TARGET_DIR.
           find "$TARGET_DIR" -mindepth 1 -type d -empty -delete
-
-          echo "All .png images have been moved to '$TARGET_DIR' and empty directories deleted."
 
           zip -r craft_essence.zip craft_essence
           sha=`sha256sum craft_essence.zip | awk '{ print $1 }'`
