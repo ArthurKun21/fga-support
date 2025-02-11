@@ -11,6 +11,8 @@ jobs:
       TIME_STAMP: ""
       SERVANT_SHA: ""
       CE_SHA: ""
+      SERVANT_COLORED_SHA: ""
+      CE_COLORED_SHA: ""
     steps:
       - uses: actions/checkout@v4
 
@@ -31,27 +33,23 @@ jobs:
           if [ ! -d "craft_essence" ]; then
             mkdir craft_essence
           fi
-
-          # Define the parent directory
-          TARGET_DIR="craft_essence"
-
-          # Find all .png files in subdirectories and process them.
-          find "$TARGET_DIR" -mindepth 2 -type f -iname '*.png' -print0 | while IFS= read -r -d '' file; do
-            # Get the filename from the full path.
-            base=$(basename "$file")
-            # Remove all occurrences of '_000' from the filename.
-            newbase="${base//_000/}"
-            
-            # Move (and rename) the file to the TARGET_DIR.
-            mv "$file" "$TARGET_DIR/$newbase"
-          done
-
-          # Delete any empty directories within TARGET_DIR.
-          find "$TARGET_DIR" -mindepth 1 -type d -empty -delete
-
           zip -r craft_essence.zip craft_essence
           sha=`sha256sum craft_essence.zip | awk '{ print $1 }'`
           echo "CE_SHA=$sha" >> $GITHUB_ENV
+
+          if [ ! -d "servant-colored" ]; then
+            mkdir servant-colored
+          fi
+          zip -r servant-colored.zip servant-colored
+          sha=`sha256sum servant-colored.zip | awk '{ print $1 }'`
+          echo "SERVANT_COLORED_SHA=$sha" >> $GITHUB_ENV
+
+          if [ ! -d "craft_essence-colored" ]; then
+            mkdir craft_essence-colored
+          fi
+          zip -r craft_essence-colored.zip craft_essence-colored
+          sha=`sha256sum craft_essence-colored.zip | awk '{ print $1 }'`
+          echo "CE_COLORED_SHA=$sha" >> $GITHUB_ENV
     
       - name: Create release
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
@@ -65,9 +63,13 @@ jobs:
             | ------- | ------- |
             | servant.zip | ${{ env.SERVANT_SHA }} |
             | craft_essence.zip | ${{ env.CE_SHA }} |
+            | servant-colored.zip | ${{ env.SERVANT_COLORED_SHA }} |
+            | craft_essence-colored.zip | ${{ env.CE_COLORED_SHA }} |
           files: |
             servant.zip
             craft_essence.zip
+            servant-colored.zip
+            craft_essence-colored.zip
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
