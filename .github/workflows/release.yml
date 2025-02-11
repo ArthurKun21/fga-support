@@ -10,6 +10,7 @@ jobs:
     env:
       TIME_STAMP: ""
       SERVANT_SHA: ""
+      CE_SHA: ""
     steps:
       - uses: actions/checkout@v4
 
