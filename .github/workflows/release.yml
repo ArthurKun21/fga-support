@@ -9,10 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TIME_STAMP: ""
-      SERVANT_SHA: ""
-      CE_SHA: ""
-      SERVANT_COLORED_SHA: ""
-      CE_COLORED_SHA: ""
     steps:
       - uses: actions/checkout@v4
 
@@ -27,29 +23,21 @@ jobs:
             mkdir servant
           fi
           zip -r servant.zip servant
-          sha=`sha256sum servant.zip | awk '{ print $1 }'`
-          echo "SERVANT_SHA=$sha" >> $GITHUB_ENV
 
           if [ ! -d "ce" ]; then
             mkdir ce
           fi
           zip -r ce.zip ce
-          sha=`sha256sum ce.zip | awk '{ print $1 }'`
-          echo "CE_SHA=$sha" >> $GITHUB_ENV
 
           if [ ! -d "servant-color" ]; then
             mkdir servant-color
           fi
           zip -r servant-color.zip servant-color
-          sha=`sha256sum servant-color.zip | awk '{ print $1 }'`
-          echo "SERVANT_COLORED_SHA=$sha" >> $GITHUB_ENV
 
           if [ ! -d "ce-color" ]; then
             mkdir ce-color
           fi
           zip -r ce-color.zip ce-color
-          sha=`sha256sum ce-color.zip | awk '{ print $1 }'`
-          echo "CE_COLORED_SHA=$sha" >> $GITHUB_ENV
     
       - name: Create release
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
@@ -57,14 +45,12 @@ jobs:
           tag_name: "${{ env.TIME_STAMP }}"
           name: "${{ env.TIME_STAMP }}"
           body: |
-            ### Checksums
-
-            | Support | SHA-256 |
-            | ------- | ------- |
-            | servant.zip | ${{ env.SERVANT_SHA }} |
-            | ce.zip | ${{ env.CE_SHA }} |
-            | servant-color.zip | ${{ env.SERVANT_COLORED_SHA }} |
-            | ce-color.zip | ${{ env.CE_COLORED_SHA }} |
+            > [!TIP]
+            > The colored version will be used for the colored template matching.
+            > It will provide better results for selecting the correct template.
+            > In exchange, it would have increased the size of the release.
+            >
+            > If you want to save space, you can use the non-colored version.
           files: |
             servant.zip
             ce.zip
@@ -73,10 +59,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Prune old releases
-        uses: dev-drprasad/delete-older-releases@dfbe6be2a006e9475dfcbe5b8d201f1824c2a9fe # v0.3.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          keep_latest: 5
-          delete_tags: true
